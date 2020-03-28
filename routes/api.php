@@ -25,6 +25,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::patch('settings/password', 'Settings\PasswordController@update');
 });
 
+Route::apiResource('elements', 'ElementController');
+
+
 Route::group(['middleware' => 'guest:api'], function () {
     Route::post('login', 'Auth\LoginController@login');
     Route::post('register', 'Auth\RegisterController@register');

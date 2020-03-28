@@ -1,5 +1,5 @@
 <template>
-  <div class="main-layout">
+  <div class="main-layout bg-dark">
     <navbar />
 
     <div class="container mt-4">

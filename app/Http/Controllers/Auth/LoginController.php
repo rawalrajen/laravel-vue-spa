@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
@@ -91,7 +92,7 @@ class LoginController extends Controller
      * Log the user out of the application.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return void
      */
     public function logout(Request $request)
     {
