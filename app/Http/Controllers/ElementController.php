@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Element;
 use App\Http\Resources\ElementResource;
 use App\Repositories\ElementRepository;
+use Exception;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Throwable;
 
 /**
  * Class ElementController
@@ -30,7 +32,10 @@ class ElementController extends Controller
      * @param DatabaseManager $database
      * @param ElementRepository $element
      */
-    public function __construct(DatabaseManager $database, ElementRepository $element)
+    public function __construct(
+        DatabaseManager $database,
+        ElementRepository $element
+    )
     {
         $this->database = $database;
         $this->element  = $element;
@@ -55,12 +60,20 @@ class ElementController extends Controller
      */
     public function store(Request $request)
     {
-        $params  = $request->all();
-        $element = $this->element->store([
-            'name'     => $params['name'],
-            'position' => $this->element->count()
+        $request->validate([
+            'name' => 'required|string:max,255'
         ]);
-        return ElementResource::make($element);
+        try {
+            $params  = $request->all();
+            $element = $this->element->store([
+                'name'     => $params['name'],
+                'position' => $this->element->count()
+            ]);
+            return ElementResource::make($element);
+        } catch (Exception $e) {
+
+            return response()->json($e->getMessage(), $e->getCode());
+        }
     }
 
     /**
@@ -69,6 +82,7 @@ class ElementController extends Controller
      * @param Request $request
      * @param Element $element
      * @return ElementResource
+     * @throws Throwable
      */
     public function update(Request $request, Element $element)
     {
@@ -76,26 +90,35 @@ class ElementController extends Controller
             'old_index' => 'required|numeric',
             'new_index' => 'required|numeric',
         ]);
-        $oldPosition = $request->get('old_index');
-        $newPosition = $request->get('new_index');
+        $this->database->beginTransaction();
+        try {
+            $oldPosition = $request->get('old_index');
+            $newPosition = $request->get('new_index');
+            $this->updateElementPositions($oldPosition, $newPosition);
+            $this->database->commit();
 
-        $this->updateElementPosition($element, $oldPosition, $newPosition);
+            return ElementResource::make($element);
+        } catch (Exception $e) {
+            $this->database->rollBack();
 
-        return ElementResource::make($element);
+            return response()->json($e->getMessage(), $e->getCode());
+        }
+
     }
 
     /**
-     * @param $element
+     * Update element positions
+     *
      * @param $oldPosition
      * @param $newPosition
      */
-    protected function updateElementPosition($element, $oldPosition, $newPosition)
+    protected function updateElementPositions($oldPosition, $newPosition)
     {
-        //cyclic rotation upto new position
+        //handle downward drag and drop
         if ($oldPosition < $newPosition) {
-            $range = range($oldPosition + 1, $newPosition);
+            $displacement = range($oldPosition + 1, $newPosition);
 
-            foreach ($range as $position) {
+            foreach ($displacement as $position) {
                 $this->element
                     ->findBy('position', $position)
                     ->update(['position' => $position - 1]);
@@ -105,10 +128,11 @@ class ElementController extends Controller
                 ->update(['position' => $newPosition]);
         }
 
+        //handle upward drag and drop
         if ($oldPosition > $newPosition) {
-            $range = range($newPosition, $oldPosition - 1);
+            $displacement = range($newPosition, $oldPosition - 1);
 
-            foreach ($range as $position) {
+            foreach ($displacement as $position) {
                 $this->element
                     ->findBy('position', $position)
                     ->update(['position' => $position + 1]);
@@ -118,5 +142,4 @@ class ElementController extends Controller
                 ->update(['position' => $newPosition]);
         }
     }
-
 }

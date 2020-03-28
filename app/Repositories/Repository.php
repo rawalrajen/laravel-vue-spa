@@ -134,7 +134,10 @@ abstract class Repository implements RepositoryInterface
      */
     public function findBy($attribute, $value, $columns = array('*'))
     {
-        return $this->model->where($attribute, '=', $value)->first($columns);
+        return $this->model
+            ->where($attribute, '=', $value)
+            ->orderBy('updated_at')
+            ->first($columns);
     }
 
     /**

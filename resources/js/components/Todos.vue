@@ -22,13 +22,15 @@
         :disabled="loading"
         @change="update"
       >
-        <div
-          v-for="element in list"
-          :key="element.id"
-          class="list-group-item"
-        >
-          {{ element.name }}
-        </div>
+        <transition-group name="list-group">
+          <div
+            v-for="element in list"
+            :key="element.id"
+            class="list-group-item"
+          >
+            {{ element.name }}
+          </div>
+        </transition-group>
       </draggable>
     </div>
     <div class="card-footer">
@@ -77,7 +79,7 @@ export default {
       elementResource
         .store({ name: elementName })
         .then(response => {
-          this.getList()
+          this.list.push(response.data)
         })
         .catch(error => {
           console.log(error)
@@ -128,5 +130,12 @@ export default {
     .card-body {
         overflow-y: scroll;
         max-height: 500px;
+    }
+    .list-group-enter-active, .list-leave-active {
+      transition: all 1s;
+    }
+    .list-group-enter, .list-leave-to /* .list-leave-active below version 2.1.8 */ {
+      opacity: 0;
+      transform: translateY(30px);
     }
 </style>
