@@ -3,7 +3,7 @@ import { getToken, setToken } from './auth'
 
 // Create axios instance
 const service = axios.create({
-  baseURL: 'http://localhost:8001/api',
+  baseURL: 'http://localhost:8000/api',
   timeout: 10000 // Request timeout
 })
 
