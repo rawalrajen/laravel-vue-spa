@@ -100,10 +100,11 @@ export default {
             new_index: movedElement.newIndex
           }
         ).then(response => {
-          this.getList()
+          console.log(response.data)
         }).catch(error => {
           console.log(error)
         }).finally(() => {
+          this.getList()
           this.loading = false
         })
       }

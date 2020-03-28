@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Throwable;
 
 /**
@@ -101,7 +102,7 @@ class ElementController extends Controller
         } catch (Exception $e) {
             $this->database->rollBack();
 
-            return response()->json($e->getMessage(), $e->getCode());
+            return response()->json($e->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
     }
